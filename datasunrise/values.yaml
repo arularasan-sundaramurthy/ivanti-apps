@@ -50,7 +50,7 @@ proxyService:
 
 ## Service for UI web interface
 uiService:
-  type: ClusterIP
+  type: LoadBalancer
   port: 11000
   annotations: {}
 
