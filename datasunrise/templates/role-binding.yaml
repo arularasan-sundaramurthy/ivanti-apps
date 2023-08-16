@@ -1,0 +1,16 @@
+{{- if .Values.rbac.create -}}
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: {{ include "datasunrise.fullname" . }}
+  labels:
+    {{- include "datasunrise.labels" . | nindent 4 }}
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: Role
+  name: {{ include "datasunrise.fullname" . }}
+subjects:
+  - kind: ServiceAccount
+    name: {{ include "datasunrise.serviceAccountName" . }}
+    namespace: "{{ .Release.Namespace }}"
+{{- end -}}

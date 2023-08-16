@@ -1,0 +1,102 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "datasunrise.fullname" . }}
+  labels:
+    {{- include "datasunrise.labels" . | nindent 4 }}
+spec:
+  {{- if not .Values.autoscaling.enabled }}
+  replicas: {{ .Values.replicaCount }}
+  {{- end }}
+  selector:
+    matchLabels:
+      {{- include "datasunrise.selectorLabels" . | nindent 6 }}
+  template:
+    metadata:
+      {{- with .Values.podAnnotations }}
+      annotations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      labels:
+        {{- include "datasunrise.selectorLabels" . | nindent 8 }}
+    spec:
+      {{- with .Values.imagePullSecrets }}
+      imagePullSecrets:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      serviceAccountName: {{ include "datasunrise.serviceAccountName" . }}
+      securityContext:
+        {{- toYaml .Values.podSecurityContext | nindent 8 }}
+      {{- if .Values.customUiCert }}
+      volumes:
+        - name: ui-cert-volume
+          {{- if .Values.customUiCert.secretProviderClassName }}
+          csi:
+            driver: secrets-store.csi.k8s.io
+            readOnly: true
+            volumeAttributes:
+              secretProviderClass: {{ .Values.customUiCert.secretProviderClassName | quote }}
+          {{- else }}
+          secret:
+            secretName: {{ .Values.customUiCert.secretName }}
+          {{- end }}
+      {{- end }}
+      containers:
+        - name: {{ .Chart.Name }}
+          image: "{{ .Values.image.repository}}:{{ .Values.image.tag | default .Chart.AppVersion }}"
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          ports:
+            - name: ui
+              containerPort: 11000
+            {{- range $key, $val := .Values.proxyService.ports }}
+            - name: {{ $key | lower }}
+              containerPort: {{ $val }}
+            {{- end }}
+          env:
+            - name: DS_DISABLE_SERVERNAME_PREFIX
+              value: "1"
+          {{- if .Values.customUiCert }}
+            - name: CUSTOM_CERT_NAME
+              value: {{ .Values.customUiCert.secretKey | quote }}
+          {{- end }}
+          {{- if .Values.customUiCert.encoding }}
+            - name: CUSTOM_CERT_ENCODING
+              value: {{ .Values.customUiCert.encoding }}
+          {{- end }}
+          {{- with .Values.envVars }}
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+          {{- if .Values.readinessProbe.enabled }}
+          readinessProbe:
+            httpGet:
+              path: /healthcheck/basic
+              port: ui
+              scheme: HTTPS
+            failureThreshold: {{ .Values.readinessProbe.failureThreshold }}
+            initialDelaySeconds: {{ .Values.readinessProbe.initialDelaySeconds }}
+            periodSeconds: {{ .Values.readinessProbe.periodSeconds }}
+            successThreshold: {{ .Values.readinessProbe.successThreshold }}
+            timeoutSeconds: {{ .Values.readinessProbe.timeoutSeconds }}
+          {{- end }}
+          {{- if .Values.customUiCert }}
+          volumeMounts:
+            - name: ui-cert-volume
+              mountPath: "/etc/secret-volume"
+            {{- if .Values.customUiCert.secretProviderClassName }}
+              readOnly: true
+            {{- end }}
+          {{- end }}
+          resources:
+            {{- toYaml .Values.resources | nindent 12 }}
+      {{- with .Values.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.affinity }}
+      affinity:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.tolerations }}
+      tolerations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}

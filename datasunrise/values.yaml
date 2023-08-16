@@ -1,0 +1,174 @@
+## DataSunrise Image
+## By default, it's using datasunrise/datasunrise:{TAG}
+## where {TAG} is taken from Chart.yaml from appVersion field
+image:
+  repository: datasunrise/datasunrise
+  tag: ""
+  pullPolicy: IfNotPresent
+
+## Specifying ImagePullSecrets on a Pod
+## Kubernetes supports specifying container image registry keys on a Pod
+## Useful if you want to use your custom image from the private registry
+## docs: https://kubernetes.io/docs/concepts/containers/images/#specifying-imagepullsecrets-on-a-pod
+imagePullSecrets: []
+
+## Override the default value of the chart name
+## Default is: datasunrise
+nameOverride: ""
+
+## Override the full value of the chart name
+## Default is: {YOUR_CHART_NAME}-datasunrise
+fullnameOverride: ""
+
+## Number of replicas
+## Note: ignored if HPA is enabled
+replicaCount: 1
+
+## Container environment variables
+## Сan be used, for example, to enable HA mod
+## More info about HA and other env values: https://hub.docker.com/r/datasunrise/datasunrise
+## Note: this will be substituted in raw format, so the syntax should be similar to Kubernetes env
+envVars: {}
+  # Examples:
+  # - name: DICTIONARY_TYPE
+  #   value: "postgresql"
+  #
+  # - name: DICTIONARY_PASS
+  #   valueFrom:
+  #     secretKeyRef:
+  #       name: db-secret
+  #       key: password
+
+## Service for proxying databases.
+## ServiceType is LoadBalancer, so it can only be used when hosted on cloud platforms like AWS, Azure, etc.
+## In the 'ports' section specify the port name as the key, and port number as the value
+proxyService:
+  ports: {}
+    # mysql-prod: 3307
+    # postgres-test: 5433
+  annotations: {}
+
+## Service for UI web interface
+uiService:
+  type: ClusterIP
+  port: 11000
+  annotations: {}
+
+## Set the customUiCert in order to pass custom certificate for DataSunrise UI to use
+## Provide the name of the secret located in the same namespace and the key in which the certificate is located
+customUiCert: {}
+  # secretName: ""
+  # secretKey: ""
+  ## If you store certificate in encoded form (besides the default encoding from Kubernetes), specify the encoding here so that the pod can decode it.
+  ## Supported encodings: base64
+  # encoding: ""
+
+  ## Advanced: if you want to get the secret not directly from Kubernetes, but from the Secrets Store CSI driver (Azure, Vault, etc.)
+  ## Assumed that you manually created a secretProviderClass and placed it in the namespace where you plan to deploy the chart.
+  ## docs: https://secrets-store-csi-driver.sigs.k8s.io
+  # secretProviderClassName: ""
+
+## Ingress allows ingress services to be created to allow external access
+## from Kubernetes to access DataSunrise pods
+ingress:
+  enabled: false
+  className: ""
+  ## Some additional annotations are needed for the ingress.
+  ## If you are using nginx, the necessary annotations are already present below.
+  ## If you use a different ingress, you need to find similar annotations for your class.
+  ## the HTTPS backend and 'sticky session' annotations are needed
+  annotations:
+    nginx.ingress.kubernetes.io/backend-protocol: "HTTPS"
+    nginx.ingress.kubernetes.io/affinity: "cookie"
+    nginx.ingress.kubernetes.io/affinity-mode: "persistent"
+    # kubernetes.io/ingress.class: nginx
+    # kubernetes.io/tls-acme: "true"
+  hosts:
+    - host: datasunrise.local
+      paths:
+        - path: /
+          pathType: ImplementationSpecific
+  tls: []
+  #  - secretName: datasunrise-tls
+  #    hosts:
+  #      - datasunrise.local
+
+## readinessProbe is used to determine the state of the container.
+## You can override the default values or disable this healthcheck completely.
+## docs: https://kubernetes.io/docs/tasks/configure-pod-container/configure-liveness-readiness-startup-probes/#define-readiness-probes
+readinessProbe:
+  enabled: true
+  # When a probe fails, Kubernetes will try failureThreshold times before giving up
+  failureThreshold: 3
+  # Number of seconds after the container has started before probe initiates
+  initialDelaySeconds: 2
+  # How often (in seconds) to perform the probe
+  periodSeconds: 10
+  # Minimum consecutive successes for the probe to be considered successful after having failed
+  successThreshold: 2
+  # Number of seconds after which the probe times out.
+  timeoutSeconds: 5
+
+## HPA support for CPU and RAM metrics
+## This section enables datasunrise pods to autoscale based on container metrics
+## Note: If HPA is enabled, the ReplicaCount parameter is ignored
+## docs: https://kubernetes.io/docs/tasks/run-application/horizontal-pod-autoscale
+autoscaling:
+  enabled: false
+  minReplicas: 1
+  maxReplicas: 10
+  targetCPUUtilizationPercentage: 80
+  # targetMemoryUtilizationPercentage: 80
+
+## Pod resource requests & limits
+## If you do want to specify resources, uncomment the following
+## lines, adjust them as necessary, and remove the curly braces after 'resources:'.
+resources: {}
+#  requests:
+#    cpu: 1
+#    memory: 1Gi
+#  limits:
+#    cpu: 4
+#    memory: 4Gi
+
+## Enable and specify RBAC rules
+## The recommended rules are already listed below, but you can override them or specify your own
+rbac:
+  create: false
+  rules:
+    - apiGroups: [""]
+      resources: ["pods"]
+      verbs: ["get", "list", "watch"]
+
+serviceAccount:
+  # Specifies whether a service account should be created
+  create: true
+  # Annotations to add to the service account
+  annotations: {}
+  # The name of the service account to use.
+  # If not set and create is true, a name is generated using the fullname template
+  name: ""
+
+## Annotations to be added to pods
+podAnnotations: {}
+  # Example:
+  # iam.amazonaws.com/role: <my_role_arn>
+
+## Configure securityContext valid for the whole pod
+## docs: http://kubernetes.io/docs/user-guide/security-context/
+podSecurityContext: {}
+  # readOnlyRootFilesystem: true
+  # runAsNonRoot: true
+  # runAsUser: 1000
+
+## nodeSelector labels for pod assignment, formatted as a multi-line string or YAML map.
+## docs: https://kubernetes.io/docs/concepts/configuration/assign-pod-node/#nodeselector
+nodeSelector: {}
+  # Example:
+  # beta.kubernetes.io/arch: amd64
+
+## Toleration settings for pods
+tolerations: []
+
+## Affinity settings for pods
+affinity: {}

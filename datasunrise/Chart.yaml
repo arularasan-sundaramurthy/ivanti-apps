@@ -1,0 +1,22 @@
+annotations:
+  artifacthub.io/links: |
+    - name: support
+      url: https://www.datasunrise.com/support
+    - name: DockerHub
+      url: https://hub.docker.com/r/datasunrise/datasunrise
+apiVersion: v2
+appVersion: 9.1.6.20808
+description: Official DataSunrise Helm Chart
+home: https://www.datasunrise.com
+icon: https://datasunrise.com/Images/ds-logo-352x352.png
+keywords:
+- databases
+- security
+- proxy
+- masking
+maintainers:
+- email: support@datasunrise.com
+  name: DataSunrise Inc.
+  url: https://www.datasunrise.com/support
+name: datasunrise
+version: 0.2.33

@@ -1,0 +1,22 @@
+{{- if .Values.proxyService.ports -}}
+apiVersion: v1
+kind: Service
+metadata:
+  name: "{{ include "datasunrise.fullname" . }}-proxy"
+  {{- with .Values.proxyService.annotations }}
+  annotations:
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
+  labels:
+    {{- include "datasunrise.labels" . | nindent 4 }}
+spec:
+  type: LoadBalancer
+  ports:
+    {{- range $key, $val := .Values.proxyService.ports }}
+    - port: {{ $val }}
+      targetPort: {{ $key | lower }}
+      name: {{ $key | lower }}
+    {{- end }}
+  selector:
+    {{- include "datasunrise.selectorLabels" . | nindent 4 }}
+{{- end -}}

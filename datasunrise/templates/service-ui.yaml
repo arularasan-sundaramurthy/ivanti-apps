@@ -1,0 +1,19 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "datasunrise.fullname" . }}
+  {{- with .Values.uiService.annotations }}
+  annotations:
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
+  labels:
+    {{- include "datasunrise.labels" . | nindent 4 }}
+spec:
+  type: {{ .Values.uiService.type }}
+  ports:
+    - port: {{ .Values.uiService.port }}
+      targetPort: ui
+      protocol: TCP
+      name: ui
+  selector:
+    {{- include "datasunrise.selectorLabels" . | nindent 4 }}

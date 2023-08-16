@@ -1,0 +1,34 @@
+Helm Chart has been successfully installed. Please note that it takes some time for pods to start.
+You can wait for 'Ready' state with this command:
+
+kubectl wait --for=condition=ready --timeout=3m pod --namespace {{ .Release.Namespace }} -l "app.kubernetes.io/name={{ include "datasunrise.name" . }},app.kubernetes.io/instance={{ .Release.Name }}"
+
+Access the DataSunrise web interface:
+{{- if .Values.ingress.enabled }}
+{{- range $host := .Values.ingress.hosts }}
+  {{- range .paths }}
+  https://{{ $host.host }}{{ .path }}
+  {{- end }}
+{{- end }}
+{{- else if contains "NodePort" .Values.uiService.type }}
+  export NODE_PORT=$(kubectl get --namespace {{ .Release.Namespace }} -o jsonpath="{.spec.ports[0].nodePort}" services {{ include "datasunrise.fullname" . }})
+  export NODE_IP=$(kubectl get nodes --namespace {{ .Release.Namespace }} -o jsonpath="{.items[0].status.addresses[0].address}")
+  echo https://$NODE_IP:$NODE_PORT
+{{- else if contains "LoadBalancer" .Values.uiService.type }}
+     NOTE: It may take a few minutes for the LoadBalancer IP to be available.
+           You can watch the status of by running 'kubectl get --namespace {{ .Release.Namespace }} svc -w {{ include "datasunrise.fullname" . }}'
+  export SERVICE_IP=$(kubectl get svc --namespace {{ .Release.Namespace }} {{ include "datasunrise.fullname" . }} --template "{{"{{ range (index .status.loadBalancer.ingress 0) }}{{.}}{{ end }}"}}")
+  echo https://$SERVICE_IP:{{ .Values.uiService.port }}
+{{- else if contains "ClusterIP" .Values.uiService.type }}
+  export SVC_NAME=$(kubectl get svc --namespace {{ .Release.Namespace }} -l "app.kubernetes.io/name={{ include "datasunrise.name" . }},app.kubernetes.io/instance={{ .Release.Name }}" -o jsonpath="{.items[0].metadata.name}")
+  echo "Visit https://127.0.0.1:11000 to use your application"
+  kubectl --namespace {{ .Release.Namespace }} port-forward svc/$SVC_NAME 11000:ui
+{{- end }}
+
+{{- if not .Values.proxyService.ports }}
+
+#############################################################################################
+## WARNING: You did not specify proxy ports for databases in '.Values.proxyService.ports.' ##
+## Proxied functionality (including masking and security) will not be available.           ##
+#############################################################################################
+{{- end }}
