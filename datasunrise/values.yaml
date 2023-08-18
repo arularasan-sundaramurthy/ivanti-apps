@@ -22,7 +22,7 @@ fullnameOverride: ""
 
 ## Number of replicas
 ## Note: ignored if HPA is enabled
-replicaCount: 1
+replicaCount: 2
 
 ## Container environment variables
 ## Сan be used, for example, to enable HA mod
