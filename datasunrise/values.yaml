@@ -43,7 +43,8 @@ envVars: {}
 ## ServiceType is LoadBalancer, so it can only be used when hosted on cloud platforms like AWS, Azure, etc.
 ## In the 'ports' section specify the port name as the key, and port number as the value
 proxyService:
-  ports: {}
+  ports:
+    port: 31435
     # mysql-prod: 3307
     # postgres-test: 5433
   annotations: {}
