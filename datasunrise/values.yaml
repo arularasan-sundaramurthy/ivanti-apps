@@ -115,7 +115,7 @@ readinessProbe:
 ## Note: If HPA is enabled, the ReplicaCount parameter is ignored
 ## docs: https://kubernetes.io/docs/tasks/run-application/horizontal-pod-autoscale
 autoscaling:
-  enabled: false
+  enabled: true
   minReplicas: 1
   maxReplicas: 10
   targetCPUUtilizationPercentage: 80
