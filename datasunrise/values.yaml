@@ -45,6 +45,7 @@ envVars: {}
 proxyService:
   ports:
     port: 31435
+    port: 31436
     # mysql-prod: 3307
     # postgres-test: 5433
   annotations: {}
