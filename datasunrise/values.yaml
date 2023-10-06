@@ -3,7 +3,7 @@
 ## where {TAG} is taken from Chart.yaml from appVersion field
 image:
   repository: datasunrise/datasunrise
-  tag: ""
+  tag: "9.1.11.20969"
   pullPolicy: IfNotPresent
 
 ## Specifying ImagePullSecrets on a Pod
@@ -28,26 +28,45 @@ replicaCount: 1
 ## Сan be used, for example, to enable HA mod
 ## More info about HA and other env values: https://hub.docker.com/r/datasunrise/datasunrise
 ## Note: this will be substituted in raw format, so the syntax should be similar to Kubernetes env
-envVars: {}
-  # Examples:
-  # - name: DICTIONARY_TYPE
-  #   value: "postgresql"
-  #
-  # - name: DICTIONARY_PASS
-  #   valueFrom:
-  #     secretKeyRef:
-  #       name: db-secret
-  #       key: password
+envVars: 
+  - name: DICTIONARY_TYPE
+    value: "mssql" 
+  - name: DICTIONARY_HOST
+    value: "TTZSTGDBCL1AG2.ops.local" 
+  - name: DICTIONARY_PORT
+    value: "1433" 
+  - name: DICTIONARY_DB_NAME
+    value: "DS_Dic_Cont" 
+  - name: DICTIONARY_LOGIN
+    value: "DS_Admin" 
+  - name: DICTIONARY_PASS
+     valueFrom:
+        secretKeyRef:
+            name: secretdictpass
+            key: password123 
+  - name: AUDIT_TYPE
+    value: "mssql" 
+  - name: AUDIT_HOST
+    value: "TTZSTGDBCL1AG2.ops.local" 
+  - name: AUDIT_PORT
+    value: "1433" 
+  - name: AUDIT_DB_NAME
+    value: "DS_Audit_Cont" 
+  - name: AUDIT_LOGIN
+    value: "DS_Admin" 
+  - name: AUDIT_PASS
+    valueFrom:
+        secretKeyRef:
+            name: secretauditpass
+            key: password123 
 
 ## Service for proxying databases.
 ## ServiceType is LoadBalancer, so it can only be used when hosted on cloud platforms like AWS, Azure, etc.
 ## In the 'ports' section specify the port name as the key, and port number as the value
 proxyService:
-  ports:
-    port: 31435
-    port: 31436
-    # mysql-prod: 3307
-    # postgres-test: 5433
+  ports: 
+     TTZISM2DBCL1ND1: 31435
+     TTZISM2DBCL1ND1: 31436
   annotations: {}
 
 ## Service for UI web interface
@@ -125,13 +144,13 @@ autoscaling:
 ## Pod resource requests & limits
 ## If you do want to specify resources, uncomment the following
 ## lines, adjust them as necessary, and remove the curly braces after 'resources:'.
-resources: {}
-#  requests:
-#    cpu: 1
-#    memory: 1Gi
-#  limits:
-#    cpu: 4
-#    memory: 4Gi
+resources: 
+  requests:
+    cpu: 2
+    memory: 8Gi
+  limits:
+    cpu: 4
+    memory: 16Gi
 
 ## Enable and specify RBAC rules
 ## The recommended rules are already listed below, but you can override them or specify your own
