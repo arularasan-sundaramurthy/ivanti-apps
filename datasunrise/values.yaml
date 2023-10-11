@@ -40,10 +40,11 @@ envVars:
   - name: DICTIONARY_LOGIN
     value: "DS_Admin" 
   - name: DICTIONARY_PASS
-     valueFrom:
-        secretKeyRef:
-            name: DS_Admin
-            key: Wy"b6~LKiW"i4:, 
+    value: "Wy"b6~LKiW"i4:," 
+     #valueFrom:
+        #secretKeyRef:
+            #name: DS_Admin
+            #key: Wy"b6~LKiW"i4:, 
   - name: AUDIT_TYPE
     value: "mssql" 
   - name: AUDIT_HOST
@@ -55,10 +56,11 @@ envVars:
   - name: AUDIT_LOGIN
     value: "DS_Admin" 
   - name: AUDIT_PASS
-    valueFrom:
-        secretKeyRef:
-            name: DS_Admin
-            key: Wy"b6~LKiW"i4:,
+    value: "Wy"b6~LKiW"i4:," 
+    #valueFrom:
+        #secretKeyRef:
+            #name: DS_Admin
+            #key: Wy"b6~LKiW"i4:,
             
 ## Service for proxying databases.
 ## ServiceType is LoadBalancer, so it can only be used when hosted on cloud platforms like AWS, Azure, etc.
